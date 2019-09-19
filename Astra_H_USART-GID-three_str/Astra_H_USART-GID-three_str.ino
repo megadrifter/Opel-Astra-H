@@ -66,6 +66,7 @@ bool settings_mode = 0;
 bool test_mode = 0;
 bool alarm = 0;
 bool Blink = 0;
+//bool REVERSE = 0; //задний ход вкл/выкл
 int VOLTAGE = 131;
 int T_ENG = 1000;
 int SPEED = 0;
@@ -75,6 +76,7 @@ int MONTH = 0;
 int YEAR = 0;
 int data2 = 0;
 int data4 = 0;
+int RANGE = 0;
 uint32_t btn = 0;
 uint32_t time_request_ecc = 0;
 uint32_t time_send = 0;
@@ -187,7 +189,6 @@ void loop() {
   }
   //******************************* Parameter display **********************************
   if ((millis() - Time_Update_Message) > 500) {
-    //message_album = Normal((message_temp) + "°C" + " " + data_to_str(VOLTAGE, 1) + "V" + " " + String(SPEED) + "km/h" + " " + String(RPM) + "rpm");
     message_album = Central((message_temp) + "°C" + " " + data_to_str(VOLTAGE, 1) + "V" + " " + String(SPEED) + "km/h" + " " + String(RPM) + "rpm");
     if (test_mode == 1) {
       Message_USART = "TEST MODE";
@@ -218,8 +219,7 @@ void loop() {
   }
   //******************************* Update display string artist **********************************
   if ((key_acc == 1) && ((millis() - time_send_artist) > 500) || (p_message_artist != message_artist )) {
-    message_artist = Central(data_to_time(DAY) + "." + data_to_time(MONTH) + "." + "20" + data_to_time(YEAR)); //(Bold
-    // message_artist = Central(Bold(data_to_time(DAY)) + "." + data_to_time(MONTH) + "." + "20" + data_to_time(YEAR));
+    message_artist = Central(("OCTATOK ") + String(RANGE) + "km" + "    " + data_to_time(DAY) + "." + data_to_time(MONTH) + "." + "20" + data_to_time(YEAR));
     message_to_DIS_artist(message_artist);
     p_message_artist = message_artist;
     time_send_artist = millis();

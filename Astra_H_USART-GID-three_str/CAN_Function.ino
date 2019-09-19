@@ -25,6 +25,7 @@ void CANSetup(void)
   canBus.filter(4, CAN_FIFO0, 0x450, 0xFFFFFFFF);
   canBus.filter(5, CAN_FIFO1, 0x180, 0xFFFFFFFF);
   canBus.filter(6, CAN_FIFO0, 0x4E8, 0xFFFFFFFF);
+  canBus.filter(6, CAN_FIFO0, 0x4EE, 0xFFFFFFFF);
   canBus.set_irq_mode();
   nvic_irq_set_priority(NVIC_CAN_RX1, 0);
   nvic_irq_set_priority(NVIC_USB_LP_CAN_RX0, 0);

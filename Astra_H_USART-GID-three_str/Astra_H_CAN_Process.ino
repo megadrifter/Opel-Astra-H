@@ -87,6 +87,9 @@ void CAN_message_process(CanMsg *can_msg) {
         if (can_msg->Data[0] == 0x46) {
           SPEED = ((((can_msg->Data[4]) << 8) + (can_msg->Data[5])) >> 7);
           RPM = ((((can_msg->Data[2]) << 8) + (can_msg->Data[3])) >> 2);
+          //          if ((can_msg->Data[6]) == 0x04) { //задний ход вкл/выкл
+          //            REVERSE = 1;
+          //          }
         }
         break;
       }
@@ -98,6 +101,12 @@ void CAN_message_process(CanMsg *can_msg) {
         }
         break;
       }
+    case 0x4EE: {
+        if (can_msg->Data[0] == 0x46) {
+          RANGE = ((((can_msg->Data[2]) << 8) + (can_msg->Data[3])) / 2);
+        }
+        break;
+      }
     case MS_IGNITION_STATE_ID: {
         if (can_msg->Data[2] ==  MS_IGNITION_NO_KEY) {
           key_acc = 0;
@@ -105,11 +114,6 @@ void CAN_message_process(CanMsg *can_msg) {
         if ((can_msg->Data[2] ==  MS_IGNITION_KEY_PRESENT) || (can_msg->Data[2] == MS_IGNITION_START)) {
           key_acc = 1;
         }
-//        else {
-//          if (key_acc == 1) {
-//            key_acc = 0;
-//          }
-//        }
         break;
       }
   }
