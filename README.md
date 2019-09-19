@@ -1,1 +1,1 @@
-# Opel-Astra-H
+# Opel-Astra-H CanBus for Android Car or other multimedia
