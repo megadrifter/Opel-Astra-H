@@ -28,6 +28,7 @@
 #define MS_BTN_PREV 0x92
 #define MS_BTN_VOL 0x93
 #define MS_MEDIA_ID 0x6C1
+#define MS_CLIMATE_INFO_ID 0x6C8
 #define MS_ECC_ID 0x548
 #define MS_BATTERY 0x07
 #define MS_ENGINE_TEMP 0x10
@@ -38,10 +39,13 @@
 #define MS_IGNITION_1 0x05
 #define MS_IGNITION_START 0x06
 #define MS_SPEED_RPM_ID 0x4E8
+#define MS_RANGE_ID 0x4EE
 #define MS_BACKWARDS_BIT 0x04
 #define MS_CLEAR_DISPLAY 0x0691
 #define MS_WAKEUP_ID 0x697
-#define MS_TIME_CLOCK 0x180
+#define MS_TIME_CLOCK_ID 0x180
+#define MS_WINDOW_ID 0x2B0
+#define MS_TEMP_OUT_DOOR_ID 0x683
 // Define buttons state bytes
 #define BTN_PRESSED 0x01
 #define BTN_RELEASED 0x00
@@ -56,27 +60,39 @@
 #define PC13OFF 1
 #define DELAY 250
 //#define DEBUG  //Debug activation will increase the ant of memory by ~16k
+#define PRINT_CANBUS //отправлять данные для serial manager
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 //                         ASTRA H VARIABLES AND FUNCTIONS                             //
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 //****************************************Variables************************************//
+char CTemp[2];
 bool key_acc = 0;
-bool settings_mode = 0;
 bool test_mode = 0;
 bool alarm = 0;
 bool Blink = 0;
-//bool REVERSE = 0; //задний ход вкл/выкл
+bool REVERSE = 0; //задний ход вкл/выкл
+int clim_temp = 0;
 int VOLTAGE = 131;
+int p_VOLTAGE = 0;
 int T_ENG = 1000;
+int p_T_ENG = 0;
 int SPEED = 0;
+int p_SPEED = 0;
 int RPM = 0;
+int p_RPM = 0;
 int DAY = 0;
 int MONTH = 0;
 int YEAR = 0;
 int data2 = 0;
 int data4 = 0;
 int RANGE = 0;
+int p_RANGE = 0;
+int window = 0;
+int CNapr;
+int CSpeed;
+int CEco;
+int COutT;
 uint32_t btn = 0;
 uint32_t time_request_ecc = 0;
 uint32_t time_send = 0;
@@ -131,7 +147,7 @@ HardwareCAN canBus(CAN1_BASE);
 void CANSetup(void);
 void SendCANmessage(long, byte, byte, byte, byte, byte, byte, byte, byte, byte);
 void btn_function(int, int);
-
+void SendClimateData(void);
 //*************************************************************************************//
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
@@ -165,7 +181,7 @@ void loop() {
     digitalWrite(PC13, HIGH);
   }
   //*******************************Request for data from the ECC************************
-  if ((millis() - time_request_ecc) > 1000) {
+  if ((key_acc == 1) &&  ((millis() - time_request_ecc) > 1000)) {
     SendCANmessage(0x0248, 8, 0x06, 0xAA, 0x01, 0x01, 0x07, 0x10, 0x11, 0x00);
     time_request_ecc = millis();
   }
@@ -183,12 +199,12 @@ void loop() {
     Message_USART = Data_USART();
     Time_USART = millis();
   }
-  if (Message_USART != "") {
+  if ((key_acc == 1) && (Message_USART != "")) {
     message = Central(Bold(Message_USART));
     Time_Update_Message = millis();
   }
   //******************************* Parameter display **********************************
-  if ((millis() - Time_Update_Message) > 500) {
+  if ((key_acc == 1) && ((millis() - Time_Update_Message) > 500)) {
     message_album = Central((message_temp) + "°C" + " " + data_to_str(VOLTAGE, 1) + "V" + " " + String(SPEED) + "km/h" + " " + String(RPM) + "rpm");
     if (test_mode == 1) {
       Message_USART = "TEST MODE";

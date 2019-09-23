@@ -4,28 +4,25 @@
 //********************************************************************************************//
 //FOR CORRECT WORK, IT IS REQUIRED TO INCLUDE CAN_MCR_TXFP In the HardwareCAN.cpp FILE line 26//
 //********************************************************************************************//
-/*********************************************************************************************
- ***************These variables and functions must be included in the main sketch.************
-  #define CAN_RX_QUEUE_SIZE 36
-  HardwareCAN canBus(CAN1_BASE);
-  void CANSetup(void);
-  void SendCANmessage(long, byte, byte, byte, byte, byte, byte, byte, byte, byte);
-**********************************************************************************************/
 void CANSetup(void)
 {
   CAN_STATUS Stat ;
   // Initialize CAN module
   canBus.map(CAN_GPIO_PB8_PB9);
   Stat = canBus.begin(CAN_SPEED_95, CAN_MODE_NORMAL);
-  //canBus.filter(0, CAN_FIFO0, 0, 0);
-  canBus.filter(0, CAN_FIFO0, 0x201, 0xFFFFFFFF);
-  canBus.filter(1, CAN_FIFO1, 0x206, 0xFFFFFFFF);
-  canBus.filter(2, CAN_FIFO0, 0x548, 0xFFFFFFFF);
-  canBus.filter(3, CAN_FIFO1, 0x6C1, 0xFFFFFFFF);
-  canBus.filter(4, CAN_FIFO0, 0x450, 0xFFFFFFFF);
-  canBus.filter(5, CAN_FIFO1, 0x180, 0xFFFFFFFF);
-  canBus.filter(6, CAN_FIFO0, 0x4E8, 0xFFFFFFFF);
-  canBus.filter(6, CAN_FIFO0, 0x4EE, 0xFFFFFFFF);
+  //canBus.filter(0, CAN_FIFO0, 0, 0); //без фильтра
+  canBus.filter(0, CAN_FIFO0, MS_WINDOW_ID, 0xFFFFFFFF);
+  canBus.filter(1, CAN_FIFO1, MS_WHEEL_BUTTONS_ID, 0xFFFFFFFF);
+  canBus.filter(2, CAN_FIFO0, MS_ECC_ID, 0xFFFFFFFF);
+  canBus.filter(3, CAN_FIFO1, MS_MEDIA_ID, 0xFFFFFFFF);
+  canBus.filter(4, CAN_FIFO0, MS_IGNITION_STATE_ID, 0xFFFFFFFF);
+  canBus.filter(5, CAN_FIFO1, MS_TIME_CLOCK_ID, 0xFFFFFFFF);
+  canBus.filter(6, CAN_FIFO0, MS_SPEED_RPM_ID, 0xFFFFFFFF);
+  canBus.filter(7, CAN_FIFO1, MS_RANGE_ID, 0xFFFFFFFF);
+#ifdef PRINT_CANBUS
+  canBus.filter(8, CAN_FIFO0, MS_TEMP_OUT_DOOR_ID, 0xFFFFFFFF);
+  //canBus.filter(8, CAN_FIFO0, MS_CLIMATE_INFO_ID, 0xFFFFFFFF);
+#endif
   canBus.set_irq_mode();
   nvic_irq_set_priority(NVIC_CAN_RX1, 0);
   nvic_irq_set_priority(NVIC_USB_LP_CAN_RX0, 0);
@@ -41,7 +38,7 @@ void SendCANmessage(long id = 0x100, byte dlength = 8, byte d0 = 0x00, byte d1 =
   msg.IDE = CAN_ID_STD;
   msg.RTR = CAN_RTR_DATA;
   msg.ID = id ;
-  msg.DLC = dlength;                   // Number of data bytes to follow
+  msg.DLC = dlength;
   msg.Data[0] = d0 ;
   msg.Data[1] = d1 ;
   msg.Data[2] = d2 ;
@@ -68,4 +65,25 @@ void SendCANmessage(long id = 0x100, byte dlength = 8, byte d0 = 0x00, byte d1 =
 void btn_function(int data4, int data2) {
   SendCANmessage(0x201, 3, 0x01, data4, data2);
   SendCANmessage(0x201, 3, 0x00, data4, data2);
+}
+void SendClimateData(void) {
+  char buf[8];
+  Serial.print("<C:");
+  buf[0] = (CTemp[0]);
+  buf[1] = (CTemp[1]);
+  buf[2] = (CNapr);
+  buf[3] = (CSpeed);
+  buf[4] = (CEco);
+  if (COutT < 0) {
+    buf[5] = (COutT / -100 + '0');
+    buf[6] = ((COutT % -100) / 10 + '0');
+    buf[7] = (COutT % -10 + '0');
+  }
+  else  {
+    buf[5] = (COutT / 100 + '0');
+    buf[6] = ((COutT % 100) / 10 + '0');
+    buf[7] = (COutT % 10 + '0');
+  }
+  Serial.print(buf);
+  Serial.print(">\r");
 }
