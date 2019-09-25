@@ -233,7 +233,6 @@ void loop() {
   }
   //******************************* Parameter display **********************************
   if ((key_acc == 1) && ((millis() - Time_Update_Message) > 500)) {
-    message_album = Central((message_temp) + "°C" + " " + data_to_str(VOLTAGE, 1) + "V" + " " + String(SPEED) + "km/h" + " " + String(RPM) + "rpm");
     if (test_mode == 1) {
       Message_USART = "TEST MODE";
     }
@@ -253,6 +252,7 @@ void loop() {
   }
   //******************************* Update display string album **********************************
   if ((key_acc == 1) && ((millis() - time_send_album) > 500) || (p_message_album != message_album )) {
+    message_album = Central((message_temp) + "°C" + " " + data_to_str(VOLTAGE, 1) + "V" + " " + String(SPEED) + "km/h" + " " + String(RPM) + "rpm");
     message_to_DIS_album(message_album);
     p_message_album = message_album;
     time_send_album = millis();
