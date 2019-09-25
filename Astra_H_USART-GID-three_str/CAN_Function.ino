@@ -19,10 +19,8 @@ void CANSetup(void)
   canBus.filter(5, CAN_FIFO1, MS_TIME_CLOCK_ID, 0xFFFFFFFF);
   canBus.filter(6, CAN_FIFO0, MS_SPEED_RPM_ID, 0xFFFFFFFF);
   canBus.filter(7, CAN_FIFO1, MS_RANGE_ID, 0xFFFFFFFF);
-#ifdef PRINT_CANBUS
   canBus.filter(8, CAN_FIFO0, MS_TEMP_OUT_DOOR_ID, 0xFFFFFFFF);
-  //canBus.filter(8, CAN_FIFO0, MS_CLIMATE_INFO_ID, 0xFFFFFFFF);
-#endif
+  canBus.filter(9, CAN_FIFO1, MS_CLIMATE_INFO_ID, 0xFFFFFFFF);
   canBus.set_irq_mode();
   nvic_irq_set_priority(NVIC_CAN_RX1, 0);
   nvic_irq_set_priority(NVIC_USB_LP_CAN_RX0, 0);
@@ -65,25 +63,4 @@ void SendCANmessage(long id = 0x100, byte dlength = 8, byte d0 = 0x00, byte d1 =
 void btn_function(int data4, int data2) {
   SendCANmessage(0x201, 3, 0x01, data4, data2);
   SendCANmessage(0x201, 3, 0x00, data4, data2);
-}
-void SendClimateData(void) {
-  char buf[8];
-  Serial.print("<C:");
-  buf[0] = (CTemp[0]);
-  buf[1] = (CTemp[1]);
-  buf[2] = (CNapr);
-  buf[3] = (CSpeed);
-  buf[4] = (CEco);
-  if (COutT < 0) {
-    buf[5] = (COutT / -100 + '0');
-    buf[6] = ((COutT % -100) / 10 + '0');
-    buf[7] = (COutT % -10 + '0');
-  }
-  else  {
-    buf[5] = (COutT / 100 + '0');
-    buf[6] = ((COutT % 100) / 10 + '0');
-    buf[7] = (COutT % 10 + '0');
-  }
-  Serial.print(buf);
-  Serial.print(">\r");
 }

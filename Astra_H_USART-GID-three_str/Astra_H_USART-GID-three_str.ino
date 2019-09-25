@@ -60,7 +60,6 @@
 #define PC13OFF 1
 #define DELAY 250
 //#define DEBUG  //Debug activation will increase the ant of memory by ~16k
-#define PRINT_CANBUS //отправлять данные для serial manager
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 //                         ASTRA H VARIABLES AND FUNCTIONS                             //
@@ -72,7 +71,6 @@ bool test_mode = 0;
 bool alarm = 0;
 bool Blink = 0;
 bool REVERSE = 0; //задний ход вкл/выкл
-int clim_temp = 0;
 int VOLTAGE = 131;
 int p_VOLTAGE = 0;
 int T_ENG = 1000;
@@ -147,7 +145,7 @@ HardwareCAN canBus(CAN1_BASE);
 void CANSetup(void);
 void SendCANmessage(long, byte, byte, byte, byte, byte, byte, byte, byte, byte);
 void btn_function(int, int);
-void SendClimateData(void);
+void SendClimateData();
 //*************************************************************************************//
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//

@@ -77,40 +77,32 @@ void CAN_message_process(CanMsg *can_msg) {
     case MS_ECC_ID: {
         if (can_msg->Data[0] == MS_BATTERY) {
           VOLTAGE = (can_msg->Data[2]);
-#ifdef PRINT_CANBUS
           if (VOLTAGE != p_VOLTAGE) {
             p_VOLTAGE = VOLTAGE;
             Serial2.println("<voltage:" + data_to_str(p_VOLTAGE, 1) + ">");
           }
-#endif
         }
         if (can_msg->Data[0] == MS_ENGINE_TEMP) {
           T_ENG = (((can_msg->Data[3]) * 256) + (can_msg->Data[4]));
-#ifdef PRINT_CANBUS
           if (T_ENG != p_T_ENG) {
             p_T_ENG = T_ENG;
             Serial2.println("<t_eng:" + data_to_str(p_T_ENG, 0) + ">");
           }
-#endif
         }
         break;
       }
     case MS_SPEED_RPM_ID: {
         if (can_msg->Data[0] == 0x46) {
           SPEED = ((((can_msg->Data[4]) << 8) + (can_msg->Data[5])) >> 7);
-#ifdef PRINT_CANBUS
           if (SPEED != p_SPEED) {
             p_SPEED = SPEED;
             Serial2.println("<speed:" + String(p_SPEED) + ">");
           }
-#endif
           RPM = ((((can_msg->Data[2]) << 8) + (can_msg->Data[3])) >> 2);
-#ifdef PRINT_CANBUS
           if (RPM != p_RPM) {
             p_RPM = RPM;
             Serial2.println("<rpm:" + String(p_RPM) + ">");
           }
-#endif
           //          if ((can_msg->Data[6]) != 0x04) { //задний ход выкл
           //            REVERSE = 0;
           //          }
@@ -131,16 +123,13 @@ void CAN_message_process(CanMsg *can_msg) {
     case MS_RANGE_ID: {
         if (can_msg->Data[0] == 0x46) {
           RANGE = ((((can_msg->Data[2]) << 8) + (can_msg->Data[3])) / 2);
-#ifdef PRINT_CANBUS
           if (RANGE != p_RANGE) {
             p_RANGE = RANGE;
             Serial2.println("<range:" + String(p_RANGE) + ">");
           }
-#endif
         }
         break;
       }
-#ifdef PRINT_CANBUS
     case MS_CLIMATE_INFO_ID: {//***********************ClimateControl_Info
         //*************************REGULAR SEND MESSAGES IN CAN BUS
         if (can_msg->Data[0] == 0x21 && can_msg->Data[1] == 0x00 && can_msg->Data[6] == 0xB0 && can_msg->Data[7] == 0x24) {
@@ -161,24 +150,24 @@ void CAN_message_process(CanMsg *can_msg) {
         if (CEco == 0x30) {//****************************Only in none-Eco
           if (can_msg->Data[0] == 0x23 && can_msg->Data[1] == 0x26) {
             CSpeed = can_msg->Data [6];
-            SendClimateData();
+            Serial2.println("<CSpeed:" + String(CSpeed) + ">");
           }
         }
         if (CEco == 0x31) { //Only in Eco
           if (can_msg->Data[0] == 0x24 && can_msg->Data[1] == 0x50) {//*************************only in eco mode
             CSpeed = can_msg->Data[3];
-            SendClimateData();
+            Serial2.println("<CSpeed:" + String(CSpeed) + ">");
           }
         }
         //SENDS ONLY AFTER CHANGE
         if (can_msg->Data[0] == 0x21 && can_msg->Data[1] == 0x00 && can_msg->Data[6] == 0xB0 && can_msg->Data[7] == 0xA3) {//*********************After change temperature
           CTemp[0] = can_msg->Data[2];
           CTemp[1] = can_msg->Data[4];
-          SendClimateData();
+          Serial2.println("<CTemp:" + String(CTemp) + ">");
         }
         if (can_msg->Data[0] == 0x21 && can_msg->Data[1] == 0xE0 && can_msg->Data[3] == 0xA4) {//****************************After change air-flow
           CNapr = can_msg->Data[2] - 0x21;
-          SendClimateData();
+          Serial2.println("<CNapr:" + String(CNapr) + ">");
         }
         if (can_msg->Data[0] == 0x10 && can_msg->Data[6] == 0x25) {//******************After change mode Eco/none-Eco
           if (can_msg->Data[7] == 0x01) {
@@ -187,21 +176,22 @@ void CAN_message_process(CanMsg *can_msg) {
           if (can_msg->Data[7] == 0x03) {
             CEco = 0x31;
           }
-          SendClimateData();
+          Serial2.println("<CEco:" + String(CEco) + ">");
         }
         if (can_msg->Data[0] == 0x22 && can_msg->Data[1] == 0x50) {//**********************after change speed fan
           CSpeed = can_msg->Data[3];
-          SendClimateData();
+          Serial2.println("<CSpeed:" + String(CSpeed) + ">");
         }
         if ( can_msg->Data[0] == 0x25 && can_msg->Data[1] == 0xA5 && can_msg->Data[2] == 0x02  && can_msg->Data[4] == 0x50 && can_msg->Data[5] == 0x00 && can_msg->Data[6] == 0x41 && can_msg->Data[7] == 0x59) {//***********************Click Auto-Mode
           if (can_msg->Data[3] == 0xE0) {
-            CNapr = 0x38; CSpeed = 0x41;
-            SendClimateData();
+            CNapr = 0x38;
+            CSpeed = 0x41;
+            Serial2.println("<CNapr:" + String(CNapr) + ">");
+            Serial2.println("<CSpeed:" + String(CSpeed) + ">");
           }
         }
         break;
       }
-#endif
     case MS_IGNITION_STATE_ID: {
         if ((can_msg->Data[2] ==  MS_IGNITION_NO_KEY) || (can_msg->Data[2] ==  MS_IGNITION_1)) {
           key_acc = 0;
@@ -211,16 +201,14 @@ void CAN_message_process(CanMsg *can_msg) {
         }
         break;
       }
-#ifdef PRINT_CANBUS
     case MS_TEMP_OUT_DOOR_ID: {
-        if (can_msg->Data[0] == 0x46) {
-          //COutT = (can_msg->Data[2] - 80) * 5 / 10;
+        if ((can_msg->Data[0] == 0x46) && (COutT != (can_msg->Data[2] / 2) - 40)) {
+          // COutT = (can_msg->Data[2] - 80) * 5 / 10;
           COutT = (can_msg->Data[2] / 2) - 40;
-          //Serial2.println(COutT);
+          Serial2.println("<cout:" + String(COutT) + ">");
         }
         break;
       }
-#endif
     case MS_WINDOW_ID: {
         if (can_msg->Data[1] == 0x0C && can_msg->Data[2] == 0x00 && can_msg->Data[3] == 0xC8) { //main
           window =  1;
