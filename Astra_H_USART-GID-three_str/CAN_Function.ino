@@ -60,7 +60,7 @@ void SendCANmessage(long id = 0x100, byte dlength = 8, byte d0 = 0x00, byte d1 =
 #endif
   }
 }
-void btn_function(int data4, int data2) {
+void btn_function(byte data4, byte data2) {
   SendCANmessage(0x201, 3, 0x01, data4, data2);
   SendCANmessage(0x201, 3, 0x00, data4, data2);
 }

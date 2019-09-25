@@ -65,7 +65,6 @@
 //                         ASTRA H VARIABLES AND FUNCTIONS                             //
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 //****************************************Variables************************************//
-char serial_manager_read;
 char CTemp[2];
 bool key_acc = 0;
 bool test_mode = 0;
@@ -83,8 +82,8 @@ int RPM = 0;
 int DAY = 0;
 int MONTH = 0;
 int YEAR = 0;
-int data2 = 0;
-int data4 = 0;
+byte data2 = 0;
+byte data4 = 0;
 int RANGE = 0;
 int p_RANGE = 0;
 int window = 0;
@@ -132,6 +131,7 @@ String Data_USART() {
 #ifdef DEBUG
   Serial2.println(Buffer_USART);
 #endif
+  Buffer_USART.remove(Buffer_USART.length() - 1);
   return Buffer_USART;
 }
 void SendClimateData() {
@@ -167,7 +167,7 @@ String Alarm(bool event) {
 HardwareCAN canBus(CAN1_BASE);
 void CANSetup(void);
 void SendCANmessage(long, byte, byte, byte, byte, byte, byte, byte, byte, byte);
-void btn_function(int, int);
+void btn_function(byte, byte);
 //*************************************************************************************//
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
@@ -220,7 +220,15 @@ void loop() {
     Time_USART = millis();
   }
   if ((key_acc == 1) && (Message_USART != "")) {
-    message = Central(Bold(Message_USART));
+    if ( Message_USART == "run_bc") {
+      btn_function(MS_BTN_BC, 0x00);
+    }
+    if ( Message_USART == "run_settings") {
+      btn_function(MS_BTN_SETTINGS, 0x00);
+    }
+    if ((Message_USART != "run_bc") && ( Message_USART != "run_settings")) {
+      message = Central(Bold(Message_USART));
+    }
     Time_Update_Message = millis();
   }
   //******************************* Parameter display **********************************
@@ -259,11 +267,5 @@ void loop() {
     message_to_DIS_artist(message_artist);
     p_message_artist = message_artist;
     time_send_artist = millis();
-  }
-  if (Data_USART() == "run_bc") {
-    btn_function(MS_BTN_BC, 0x00);
-  }
-  if (Data_USART() == "run_settings") {
-    btn_function(MS_BTN_SETTINGS, 0x00);
   }
 }
