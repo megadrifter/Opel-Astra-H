@@ -65,6 +65,7 @@
 //                         ASTRA H VARIABLES AND FUNCTIONS                             //
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 //****************************************Variables************************************//
+char serial_manager_read;
 char CTemp[2];
 bool key_acc = 0;
 bool test_mode = 0;
@@ -76,9 +77,9 @@ int p_VOLTAGE = 0;
 int T_ENG = 1000;
 int p_T_ENG = 0;
 int SPEED = 0;
-int p_SPEED = 0;
+//int p_SPEED = 0;
 int RPM = 0;
-int p_RPM = 0;
+//int p_RPM = 0;
 int DAY = 0;
 int MONTH = 0;
 int YEAR = 0;
@@ -133,6 +134,28 @@ String Data_USART() {
 #endif
   return Buffer_USART;
 }
+void SendClimateData() {
+  char buf[8];
+  Serial2.print("<C:");
+  buf[0] = (CTemp[0]);
+  buf[1] = (CTemp[1]);
+  buf[2] = (CNapr);
+  buf[3] = (CSpeed);
+  buf[4] = (CEco);
+  if (COutT < 0) {
+    buf[5] = (COutT / -100 + '0');
+    buf[6] = ((COutT % -100) / 10 + '0');
+    buf[7] = (COutT % -10 + '0');
+  }
+  else
+  {
+    buf[5] = (COutT / 100 + '0');
+    buf[6] = ((COutT % 100) / 10 + '0');
+    buf[7] = (COutT % 10 + '0');
+  }
+  Serial2.print(buf);
+  Serial2.print(">\r");
+}
 //*********************Generate alarm text******************************************
 String Alarm(bool event) {
   if (event) return (data_to_str(T_ENG, 0));
@@ -145,7 +168,6 @@ HardwareCAN canBus(CAN1_BASE);
 void CANSetup(void);
 void SendCANmessage(long, byte, byte, byte, byte, byte, byte, byte, byte, byte);
 void btn_function(int, int);
-void SendClimateData();
 //*************************************************************************************//
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
@@ -237,5 +259,11 @@ void loop() {
     message_to_DIS_artist(message_artist);
     p_message_artist = message_artist;
     time_send_artist = millis();
+  }
+  if (Data_USART() == "run_bc") {
+    btn_function(MS_BTN_BC, 0x00);
+  }
+  if (Data_USART() == "run_settings") {
+    btn_function(MS_BTN_SETTINGS, 0x00);
   }
 }
