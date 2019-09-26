@@ -1,0 +1,5 @@
+var intent = new Intent("kg.serial.manager.send");
+    intent.putExtra("id", "1234"); 
+    intent.putExtra("data", "message_for_controller"); 
+    
+LL.getContext().sendBroadcast(intent);
