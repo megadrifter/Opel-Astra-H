@@ -65,7 +65,9 @@
 //                         ASTRA H VARIABLES AND FUNCTIONS                             //
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 //****************************************Variables************************************//
-
+int climate_temperature = 0;
+int climate_fanspeed = 0;
+int climate_direction = 0;
 char CTemp[2];
 bool key_acc = 0;
 bool test_mode = 0;

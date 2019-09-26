@@ -130,66 +130,126 @@ void CAN_message_process(CanMsg *can_msg) {
         }
         break;
       }
-    case MS_CLIMATE_INFO_ID: {
-        if (can_msg->Data[0] == 0x21 && can_msg->Data[1] == 0x00 && can_msg->Data[6] == 0xB0 && can_msg->Data[7] == 0x24) {
-          CTemp[0] = can_msg->Data[2];
-          CTemp[1] = can_msg->Data[4];
-        }
-        if (can_msg->Data[0] == 0x22 && can_msg->Data[1] == 0x01 && can_msg->Data[2] == 0xE0) {
-          CNapr = can_msg->Data[3] - 0x21;
-        }
-        if (can_msg->Data[0] == 0x22 && can_msg->Data[4] == 0x25) {
-          if (can_msg->Data[5] == 0x01) {
-            CEco = 0x30;
+    //    case MS_CLIMATE_INFO_ID: {
+    //        if (can_msg->Data[0] == 0x21 && can_msg->Data[1] == 0x00 && can_msg->Data[6] == 0xB0 && can_msg->Data[7] == 0x24) {
+    //          CTemp[0] = can_msg->Data[2];
+    //          CTemp[1] = can_msg->Data[4];
+    //        }
+    //        if (can_msg->Data[0] == 0x22 && can_msg->Data[1] == 0x01 && can_msg->Data[2] == 0xE0) {
+    //          CNapr = can_msg->Data[3] - 0x21;
+    //        }
+    //        if (can_msg->Data[0] == 0x22 && can_msg->Data[4] == 0x25) {
+    //          if (can_msg->Data[5] == 0x01) {
+    //            CEco = 0x30;
+    //          }
+    //          if (can_msg->Data[5] == 0x03) {
+    //            CEco = 0x31;
+    //          }
+    //        }
+    //        if (CEco == 0x30) {//****************************Only in none-Eco
+    //          if (can_msg->Data[0] == 0x23 && can_msg->Data[1] == 0x26) {
+    //            CSpeed = can_msg->Data [6];
+    //            SendClimateData();
+    //          }
+    //        }
+    //        if (CEco == 0x31) { //Only in Eco
+    //          if (can_msg->Data[0] == 0x24 && can_msg->Data[1] == 0x50) {//*************************only in eco mode
+    //            CSpeed = can_msg->Data[3];
+    //            SendClimateData();
+    //          }
+    //        }
+    //        //SENDS ONLY AFTER CHANGE
+    //        if (can_msg->Data[0] == 0x21 && can_msg->Data[1] == 0x00 && can_msg->Data[6] == 0xB0 && can_msg->Data[7] == 0xA3) {//*********************After change temperature
+    //          CTemp[0] = can_msg->Data[2];
+    //          CTemp[1] = can_msg->Data[4];
+    //          SendClimateData();
+    //        }
+    //        if (can_msg->Data[0] == 0x21 && can_msg->Data[1] == 0xE0 && can_msg->Data[3] == 0xA4) {//****************************After change air-flow
+    //          CNapr = can_msg->Data[2] - 0x21;
+    //          SendClimateData();
+    //        }
+    //        if (can_msg->Data[0] == 0x10 && can_msg->Data[6] == 0x25) {//******************After change mode Eco/none-Eco
+    //          if (can_msg->Data[7] == 0x01) {
+    //            CEco = 0x30;
+    //          }
+    //          if (can_msg->Data[7] == 0x03) {
+    //            CEco = 0x31;
+    //          }
+    //          SendClimateData();
+    //        }
+    //        if (can_msg->Data[0] == 0x22 && can_msg->Data[1] == 0x50) {//**********************after change speed fan
+    //          CSpeed = can_msg->Data[3];
+    //          SendClimateData();
+    //        }
+    //        if ( can_msg->Data[0] == 0x25 && can_msg->Data[1] == 0xA5 && can_msg->Data[2] == 0x02  && can_msg->Data[4] == 0x50 && can_msg->Data[5] == 0x00 && can_msg->Data[6] == 0x41 && can_msg->Data[7] == 0x59) {//***********************Click Auto-Mode
+    //          if (can_msg->Data[3] == 0xE0) {
+    //            CNapr = 0x38;
+    //            CSpeed = 0x41;
+    //            SendClimateData();
+    //          }
+    //        }
+    //        break;
+    //      }
+    //***************************************************************************
+    case MS_CLIMATE_INFO_ID: //   climate info
+      Serial2.println("climate info detected");
+      switch (can_msg->Data[0]) {
+        case 0x21: // нормальный режим, изменение направления потока
+          Serial2.println("normal mode, change flow direction");
+          // can_msg->Data[2] and [7] это направление, 52 - 59
+          switch (can_msg->Data[1]) {
+            case 0xE0:
+              if (climate_direction != can_msg->Data[2]) {
+                Serial2.println("самое новое направление");
+                Serial2.println(climate_direction, HEX);
+                climate_direction = can_msg->Data[2];
+              }
+              break;
           }
-          if (can_msg->Data[5] == 0x03) {
-            CEco = 0x31;
+          break;
+
+        case 0x22: // нормальный режим, изменение скорости потока или температуры
+          Serial2.println("нормальный режим, изменение скорости потока или температуры");
+          switch (can_msg->Data[1]) {
+            case 0x03: //заданная температура
+              Serial2.println("заданная температура");
+              if (climate_temperature != can_msg->Data[3]) {
+                climate_temperature = can_msg->Data[3];
+                Serial2.println(climate_temperature, HEX);
+              }
+              break;
+
+            case 0x50: // fan set. data[3] = data[4] = ascii
+              Serial2.println("fan set");
+              if (climate_fanspeed != can_msg->Data[3]) {
+                climate_fanspeed = can_msg->Data[3];
+                Serial2.println("climate_fanspeed");
+              }
+              break;
           }
-        }
-        if (CEco == 0x30) {//****************************Only in none-Eco
-          if (can_msg->Data[0] == 0x23 && can_msg->Data[1] == 0x26) {
-            CSpeed = can_msg->Data [6];
-            SendClimateData();
-          }
-        }
-        if (CEco == 0x31) { //Only in Eco
-          if (can_msg->Data[0] == 0x24 && can_msg->Data[1] == 0x50) {//*************************only in eco mode
-            CSpeed = can_msg->Data[3];
-            SendClimateData();
-          }
-        }
-        //SENDS ONLY AFTER CHANGE
-        if (can_msg->Data[0] == 0x21 && can_msg->Data[1] == 0x00 && can_msg->Data[6] == 0xB0 && can_msg->Data[7] == 0xA3) {//*********************After change temperature
-          CTemp[0] = can_msg->Data[2];
-          CTemp[1] = can_msg->Data[4];
-          SendClimateData();
-        }
-        if (can_msg->Data[0] == 0x21 && can_msg->Data[1] == 0xE0 && can_msg->Data[3] == 0xA4) {//****************************After change air-flow
-          CNapr = can_msg->Data[2] - 0x21;
-          SendClimateData();
-        }
-        if (can_msg->Data[0] == 0x10 && can_msg->Data[6] == 0x25) {//******************After change mode Eco/none-Eco
-          if (can_msg->Data[7] == 0x01) {
-            CEco = 0x30;
-          }
-          if (can_msg->Data[7] == 0x03) {
-            CEco = 0x31;
-          }
-          SendClimateData();
-        }
-        if (can_msg->Data[0] == 0x22 && can_msg->Data[1] == 0x50) {//**********************after change speed fan
-          CSpeed = can_msg->Data[3];
-          SendClimateData();
-        }
-        if ( can_msg->Data[0] == 0x25 && can_msg->Data[1] == 0xA5 && can_msg->Data[2] == 0x02  && can_msg->Data[4] == 0x50 && can_msg->Data[5] == 0x00 && can_msg->Data[6] == 0x41 && can_msg->Data[7] == 0x59) {//***********************Click Auto-Mode
-          if (can_msg->Data[3] == 0xE0) {
-            CNapr = 0x38;
-            CSpeed = 0x41;
-            SendClimateData();
-          }
-        }
-        break;
+          break;
+
+        case 0x24: // нормальный режим, автопоток? статус
+          Serial2.println("нормальный режим, автопоток? Скорость:");
+          // 4 is speed, 30 - 37
+          climate_fanspeed = can_msg->Data[3]; // - 0x30;
+          Serial2.println(climate_fanspeed, HEX);
+          break;
+
+        case 0x25: // нормальный режим, автоматическая скорость потока, статус
+          Serial2.println("нормальный режим, автоматическая скорость потока, статус");
+          // 4 is E0 = full auto speed, 41 = manual flow direction
+          Serial2.println(can_msg->Data[3], HEX);
+          break;
+
+        case 0x26: // режим распределения воздуха
+          Serial2.println("режим распределения воздуха");
+          // [7] is flow direction , 52 - 59
+          climate_direction = can_msg->Data[7];
+          Serial2.println(climate_direction, HEX);
+          break;
       }
+    //***************************************************************************
     case MS_IGNITION_STATE_ID: {
         if ((can_msg->Data[2] ==  MS_IGNITION_NO_KEY) || (can_msg->Data[2] ==  MS_IGNITION_1)) {
           key_acc = 0;
