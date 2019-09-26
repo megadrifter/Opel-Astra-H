@@ -1,0 +1,53 @@
+var intents=["com.maxmpz.audioplayer.TRACK_CHANGED","com.maxmpz.audioplayer.STATUS_CHANGED","com.spotify.music.metadatachanged","com.maxmpz.audioplayer.AA_CHANGED","com.android.music.metachanged","com.jrtstudio.AnotherMusicPlayer.metachanged","com.tbig.playerpro.metachanged","com.tbig.playerprotrial.metachanged","com.sec.android.app.music.metachanged"];
+var defaultAlbumArt="/storage/sdcard0/download/default-albumart.png";
+ 
+ 
+LL.bindClass("android.content.IntentFilter");
+LL.bindClass("android.os.Bundle");
+LL.bindClass("android.content.BroadcastReceiver");
+LL.bindClass("android.graphics.Bitmap");
+LL.bindClass("java.io.FileOutputStream");
+ 
+var receiver=new JavaAdapter(BroadcastReceiver,{
+onReceive:function(c,i){
+var e=i.getExtras();
+var v=LL.getVariables().edit();
+if(e.containsKey("track")){
+var track=e.get("track");
+if(track instanceof Bundle){
+v.setString("track",track.getString("title"));
+v.setString("album",track.getString("album"));
+v.setString("artist",track.getString("artist"));
+}
+else if(typeof track =="string"){
+v.setString("track",track);
+if(e.containsKey("album"))
+v.setString("album",e.getString("album"));
+if(e.containsKey("artist"))
+v.setString("artist",e.getString("artist"));
+}
+}
+if(e.containsKey("aaPath")){
+v. setString("albumart",e.getString("aaPath"));
+v.setFloat("aachange",Math.random());
+}
+else if(e.containsKey("aaBitmap")){
+var bmp=e.getParcelable("aaBitmap");
+var path=LL.getContext().getFilesDir()+"/albumart.png";
+var out=new FileOutputStream(path);
+bmp.compress(Bitmap.CompressFormat.PNG,100,out);
+out.close();
+v.setString("albumart",path);
+v.setFloat("aachange",Math.random());
+}
+else if(i.getAction().indexOf("AA_CHANGE")!=-1){
+v. setString("albumart",defaultAlbumArt);
+v.setFloat("aachange",Math.random());
+}
+v.commit();
+}
+});
+var f = new IntentFilter();
+for(var i=0;i<intents.length;i++)
+f.addAction(intents[i]);
+LL.getContext().registerReceiver(receiver,f);
