@@ -65,12 +65,13 @@
 //                         ASTRA H VARIABLES AND FUNCTIONS                             //
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 //****************************************Variables************************************//
+
 char CTemp[2];
 bool key_acc = 0;
 bool test_mode = 0;
 bool alarm = 0;
 bool Blink = 0;
-bool REVERSE = 0; //задний ход вкл/выкл
+//bool REVERSE = 0; //задний ход вкл/выкл
 int VOLTAGE = 131;
 int p_VOLTAGE = 0;
 int T_ENG = 1000;
@@ -100,13 +101,14 @@ uint32_t Time_USART = 0;
 uint32_t Time_Update_Message = 0;
 String Prev_Message;
 String Message_USART;
-String message = "OPEL";
+String message = "OPEL MEDIA SYSTEM";
 String message_album = "";
 String message_artist = "";
 String p_message_album = "";
 String p_message_artist = "";
 String p_message = "";
 String message_temp = "   ";
+String p_Data_USART = "";
 //********************************Tab function prototypes*****************************//
 //Announcement of function prototypes from other tabs for correct function call.
 void message_to_DIS (String);
@@ -119,43 +121,9 @@ String Central(String);
 void CAN_message_process(CanMsg*);
 String data_to_str(int, int);
 String data_to_time(int);
+String Data_USART();
 //************************************************************************************//
-//********************Filling an array with USART characters**************************
-String Data_USART() {
-  String Buffer_USART;
-  char u;
-  while (Serial2.available() > 0 && u != '\n') { //read serial buffer until \n
-    char u = Serial2.read();
-    if (u != 0xD) Buffer_USART += u;  // skip \r
-  }
-#ifdef DEBUG
-  Serial2.println(Buffer_USART);
-#endif
-  Buffer_USART.remove(Buffer_USART.length() - 1);
-  return Buffer_USART;
-}
-void SendClimateData() {
-  char buf[8];
-  Serial2.print("<C:");
-  buf[0] = (CTemp[0]);
-  buf[1] = (CTemp[1]);
-  buf[2] = (CNapr);
-  buf[3] = (CSpeed);
-  buf[4] = (CEco);
-  if (COutT < 0) {
-    buf[5] = (COutT / -100 + '0');
-    buf[6] = ((COutT % -100) / 10 + '0');
-    buf[7] = (COutT % -10 + '0');
-  }
-  else
-  {
-    buf[5] = (COutT / 100 + '0');
-    buf[6] = ((COutT % 100) / 10 + '0');
-    buf[7] = (COutT % 10 + '0');
-  }
-  Serial2.print(buf);
-  Serial2.print(">\r");
-}
+
 //*********************Generate alarm text******************************************
 String Alarm(bool event) {
   if (event) return (data_to_str(T_ENG, 0));
@@ -168,6 +136,7 @@ HardwareCAN canBus(CAN1_BASE);
 void CANSetup(void);
 void SendCANmessage(long, byte, byte, byte, byte, byte, byte, byte, byte, byte);
 void btn_function(byte, byte);
+void SendClimateData();
 //*************************************************************************************//
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
@@ -217,6 +186,7 @@ void loop() {
   //*************************Receiving a message with USART2****************************
   if ((key_acc == 1) && (millis() - Time_USART > 200)) {
     Message_USART = Data_USART();
+    p_Data_USART = Data_USART();
     Time_USART = millis();
   }
   if ((key_acc == 1) && (Message_USART != "")) {
