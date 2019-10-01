@@ -65,23 +65,20 @@
 //                         ASTRA H VARIABLES AND FUNCTIONS                             //
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 //****************************************Variables************************************//
-int climate_temperature = 0;
-int climate_fanspeed = 0;
-int climate_direction = 0;
-char CTemp[2];
+char p_buf[8];
+char CTemp1 = 0;
+char CTemp2 = 0;
 bool key_acc = 0;
 bool test_mode = 0;
 bool alarm = 0;
 bool Blink = 0;
-//bool REVERSE = 0; //задний ход вкл/выкл
+bool REVERSE = 0; //задний ход вкл/выкл
 int VOLTAGE = 131;
 int p_VOLTAGE = 0;
 int T_ENG = 1000;
 int p_T_ENG = 0;
 int SPEED = 0;
-//int p_SPEED = 0;
 int RPM = 0;
-//int p_RPM = 0;
 int DAY = 0;
 int MONTH = 0;
 int YEAR = 0;
@@ -90,10 +87,16 @@ byte data4 = 0;
 int RANGE = 0;
 int p_RANGE = 0;
 int window = 0;
-int CNapr;
-int CSpeed;
-int CEco;
-int COutT;
+char CNapr;
+char CSpeed;
+char CEco;
+char COutT;
+char p_CNapr;
+char p_CSpeed;
+char p_CEco;
+char p_COutT;
+char p_CTemp1;
+char p_CTemp2;
 uint32_t btn = 0;
 uint32_t time_request_ecc = 0;
 uint32_t time_send = 0;
@@ -110,7 +113,6 @@ String p_message_album = "";
 String p_message_artist = "";
 String p_message = "";
 String message_temp = "   ";
-String p_Data_USART = "";
 //********************************Tab function prototypes*****************************//
 //Announcement of function prototypes from other tabs for correct function call.
 void message_to_DIS (String);
@@ -125,7 +127,17 @@ String data_to_str(int, int);
 String data_to_time(int);
 String Data_USART();
 //************************************************************************************//
-
+//********************Filling an array with USART characters**************************
+String Data_USART() {
+  String Buffer_USART;
+  char u;
+  while (Serial2.available() > 0 && u != '\n') { //read serial buffer until \n
+    char u = Serial2.read();
+    if (u != 0xD) Buffer_USART += u;  // skip \r
+  }
+  Buffer_USART.remove(Buffer_USART.length() - 1);
+  return Buffer_USART;
+}
 //*********************Generate alarm text******************************************
 String Alarm(bool event) {
   if (event) return (data_to_str(T_ENG, 0));
@@ -138,7 +150,6 @@ HardwareCAN canBus(CAN1_BASE);
 void CANSetup(void);
 void SendCANmessage(long, byte, byte, byte, byte, byte, byte, byte, byte, byte);
 void btn_function(byte, byte);
-void SendClimateData();
 //*************************************************************************************//
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
@@ -188,7 +199,6 @@ void loop() {
   //*************************Receiving a message with USART2****************************
   if ((key_acc == 1) && (millis() - Time_USART > 200)) {
     Message_USART = Data_USART();
-    p_Data_USART = Data_USART();
     Time_USART = millis();
   }
   if ((key_acc == 1) && (Message_USART != "")) {
