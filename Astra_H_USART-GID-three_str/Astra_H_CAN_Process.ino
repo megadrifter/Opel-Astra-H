@@ -85,15 +85,15 @@ void CAN_message_process(CanMsg *can_msg) {
         if (can_msg->Data[0] == MS_BATTERY) {
           VOLTAGE = (can_msg->Data[2]);
           if (VOLTAGE != p_VOLTAGE) {
+            Serial2.println("<voltage:" + data_to_str(VOLTAGE, 1) + ">");
             p_VOLTAGE = VOLTAGE;
-            Serial2.println("<voltage:" + data_to_str(p_VOLTAGE, 1) + ">");
           }
         }
         if (can_msg->Data[0] == MS_ENGINE_TEMP) {
           T_ENG = (((can_msg->Data[3]) * 256) + (can_msg->Data[4]));
           if (T_ENG != p_T_ENG) {
+            Serial2.println("<t_eng:" + data_to_str(T_ENG, 0) + ">");
             p_T_ENG = T_ENG;
-            Serial2.println("<t_eng:" + data_to_str(p_T_ENG, 0) + ">");
           }
         }
         break;
@@ -123,8 +123,8 @@ void CAN_message_process(CanMsg *can_msg) {
         if (can_msg->Data[0] == 0x46) {
           RANGE = ((((can_msg->Data[2]) << 8) + (can_msg->Data[3])) / 2);
           if (RANGE != p_RANGE) {
+            Serial2.println("<range:" + String(RANGE) + ">");
             p_RANGE = RANGE;
-            Serial2.println("<range:" + String(p_RANGE) + ">");
           }
         }
         break;
@@ -215,20 +215,17 @@ void CAN_message_process(CanMsg *can_msg) {
         break;
       }
     case MS_TEMP_OUT_DOOR_ID: {
-        if ((can_msg->Data[0] == 0x46) && (COutT != (can_msg->Data[2] / 2) - 40)) {
+        if ((can_msg->Data[0] == 0x46) && (COutT != p_COutT)) {
           COutT = (can_msg->Data[2] / 2) - 40;
-          //          if (COutT < 0) {
-          //            buf[5] = (COutT / -100 + '0');
-          //            buf[6] = ((COutT % -100) / 10 + '0');
-          //            buf[7] = (COutT % -10 + '0');
-          //          }
-          //          else
-          //          {
-          //            buf[5] = (COutT / 100 + '0');
-          //            buf[6] = ((COutT % 100) / 10 + '0');
-          //            buf[7] = (COutT % 10 + '0');
-          //          }
+          if (COutT < 0) {
+            Serial2.println("<COutT:" + '-' + String(COutT) + ">");
+          }
+          else
+          {
+            Serial2.println("<COutT:" + String(COutT) + ">");
+          }
           Serial2.println("<COutT:" + String(COutT) + ">");
+          p_COutT = COutT;
         }
         break;
       }

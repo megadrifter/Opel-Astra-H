@@ -65,9 +65,6 @@
 //                         ASTRA H VARIABLES AND FUNCTIONS                             //
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 //****************************************Variables************************************//
-char p_buf[8];
-char CTemp1 = 0;
-char CTemp2 = 0;
 bool key_acc = 0;
 bool test_mode = 0;
 bool alarm = 0;
@@ -87,16 +84,18 @@ byte data4 = 0;
 int RANGE = 0;
 int p_RANGE = 0;
 int window = 0;
+char CTemp1 = 0;
+char CTemp2 = 0;
 char CNapr;
 char CSpeed;
 char CEco;
 char COutT;
+char p_CTemp1;
+char p_CTemp2;
 char p_CNapr;
 char p_CSpeed;
 char p_CEco;
 char p_COutT;
-char p_CTemp1;
-char p_CTemp2;
 uint32_t btn = 0;
 uint32_t time_request_ecc = 0;
 uint32_t time_send = 0;
@@ -125,7 +124,6 @@ String Central(String);
 void CAN_message_process(CanMsg*);
 String data_to_str(int, int);
 String data_to_time(int);
-String Data_USART();
 //************************************************************************************//
 //********************Filling an array with USART characters**************************
 String Data_USART() {
