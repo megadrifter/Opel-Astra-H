@@ -84,6 +84,7 @@ byte data4 = 0;
 int RANGE = 0;
 int p_RANGE = 0;
 int window = 0;
+int intCOutT;
 char CTemp1 = 0;
 char CTemp2 = 0;
 char CNapr;

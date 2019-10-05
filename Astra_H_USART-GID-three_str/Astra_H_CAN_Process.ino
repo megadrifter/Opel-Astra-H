@@ -217,14 +217,14 @@ void CAN_message_process(CanMsg *can_msg) {
     case MS_TEMP_OUT_DOOR_ID: {
         if ((can_msg->Data[0] == 0x46) && (COutT != p_COutT)) {
           COutT = (can_msg->Data[2] / 2) - 40;
-          if (COutT < 0) {
+          intCOutT = (can_msg->Data[2] / 2) - 40;
+          if (intCOutT < 0) {
             Serial2.println("<COutT:" + '-' + String(COutT) + ">");
           }
           else
           {
             Serial2.println("<COutT:" + String(COutT) + ">");
           }
-          Serial2.println("<COutT:" + String(COutT) + ">");
           p_COutT = COutT;
         }
         break;
